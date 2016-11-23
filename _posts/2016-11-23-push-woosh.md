@@ -186,5 +186,13 @@ public class PushWooshHelper {
    Вот и все, теперь, чтобы отправить json из консоли нужно вставить json в текстовое поле Android root params 
    ![Отправка json](https://files.readme.io/irTvWOecTwiL25Rz1E7i_andr_sendpush.png)
 
+   Полезные ссылки:
+   [Manual Integration](http://docs.pushwoosh.com/docs/native-android-sdk)
+   [FCM (GCM) Configuration](http://docs.pushwoosh.com/docs/fcm-configuration)
+   [Customizing Android app](http://docs.pushwoosh.com/docs/androidmanifestxml-modifications#using-local-notifications-with-pushwoosh)
+   [Example](http://www.programcreek.com/java-api-examples/index.php?source_dir=pushwoosh-native-samples-master/Android/src/com/pushwoosh/test/tags/sample/app/NotificationFactorySample.java)
+
+
+
 
 
