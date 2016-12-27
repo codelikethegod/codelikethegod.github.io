@@ -186,6 +186,59 @@ public class PushWooshHelper {
    Вот и все, теперь, чтобы отправить json из консоли нужно вставить json в текстовое поле Android root params 
    ![Отправка json](https://files.readme.io/irTvWOecTwiL25Rz1E7i_andr_sendpush.png)
 
+   UPD. Чтобы получать пуши когда приложение выгружено, нужно зарегестрировать сервис в котором получать данные
+
+   Can I use two GcmListenerService's?
+It is possible. Sometimes you need to use Pushwoosh SDK with another SDK that uses GCM as well. Usually you run into the following problem: GcmReceiver launches only one service, as a result only one subclassed service will receive push notifications and events. This would be either the one which appears the first in AndroidManifest.xml or the one with the higher priority (as outlined here: https://developer.android.com/guide/topics/manifest/intent-filter-element.html)
+
+To solve this problem you'll have to create master GcmListenerService and proxy the events to the others. See the example:
+
+ {% highlight java %}
+GCMListenerRouterService.java
+public class GCMListenerRouterService extends GcmListenerService {
+    private void dispatchMessage(String component, Bundle data) {
+        Intent intent = new Intent();
+        intent.putExtras(data);
+        intent.setAction("com.google.android.c2dm.intent.RECEIVE");
+        intent.setComponent(new ComponentName(getPackageName(), component));
+  
+        GcmReceiver.startWakefulService(getApplicationContext(), intent);
+    }
+  
+    @Override
+    public void onMessageReceived(String from, Bundle data) {
+        Log.i("PushwooshTest", "Gcm router service received message: " + (data != null ? data.toString() : "<null>") + " from: " + from);
+  
+        // Base GCM listener service removes this extra before calling onMessageReceived
+        // Need to set it again to pass intent to another service
+        data.putString("from", from);
+  
+        if (TextUtils.equals(from, getString(R.string.PW_PRIVATE_PROJECT_ID))) {
+            dispatchMessage(GCMListenerService.class.getName(), data);
+        }
+        else if (TextUtils.equals(from, getString(R.string.PW_DEMO_PROJECT_ID))) {
+            dispatchMessage(AnotherGCMListenerService.class.getName(), data);
+        }
+    }
+}
+
+{% endhighlight %}
+
+Register this receiver with the highest priority:
+{% highlight scss %}
+AndroidManifest.xml
+<service
+    android:name=".GCMListenerRouterService"
+    android:enabled="true"
+    android:exported="false" >
+    <intent-filter android:priority="100" >
+        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+    </intent-filter>
+</service>
+{% endhighlight %}
+
+You'll have to do the same for InstanceIdListenerService to listen correctly for the push token changes. We'll leave this for the homework. :)
+
    Полезные ссылки:
    [Manual Integration](http://docs.pushwoosh.com/docs/native-android-sdk)
 
